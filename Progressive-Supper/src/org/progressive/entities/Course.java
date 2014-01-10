@@ -1,5 +1,6 @@
 package org.progressive.entities;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -8,34 +9,38 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.apache.commons.collections4.SortedBag;
+import org.apache.commons.collections4.bag.TreeBag;
 import org.apache.log4j.Logger;
 import org.progressive.exceptions.AlreadyEatsWithGuest;
 import org.progressive.exceptions.CantAllocatePersonToMeal;
 import org.progressive.exceptions.CantEatWithSpouse;
 import org.progressive.exceptions.NoMoreMealsToHost;
 import org.progressive.exceptions.TooManyGuestsException;
+import org.progressive.exceptions.TooManyHosts;
+import org.progressive.iterators.ReverseIterator;
 
 public class Course {
 	static Logger logger = Logger.getLogger(Course.class);
 	
 	private CourseType type;
 	private Set<Meal> meals;
+	private SortedBag<Integer> mealSizes;
 	private Integer numHosts;
 	
 	public Course(CourseType type, Integer numHosts) {
 		this.type = type;
 		this.numHosts = numHosts;
 		this.meals = new HashSet<Meal>();
+		this.mealSizes = new TreeBag<Integer>();
 	}
 	
 	public Course(CourseType type, Integer numHosts, Integer numGuests) {
 		this.type = type;
 		this.numHosts = numHosts;
-		setUpMeals(numHosts, numGuests);
-	}
-
-	private void setUpMeals(Integer numHosts, Integer numGuests) {
 		this.meals = new HashSet<Meal>();
+		this.mealSizes = new TreeBag<Integer>();
+		
 		Integer div = numGuests / numHosts;
 		Integer remainder = numGuests % numHosts;
 		for(int i = 0; i < numHosts; i++) {
@@ -44,8 +49,8 @@ public class Course {
 				mealGuests++;
 				remainder--;
 			}
-			Meal meal = new Meal(type, mealGuests);
-			meals.add(meal);
+			Integer mealSize = mealGuests;
+			mealSizes.add(mealSize);
 		}
 	}
 	
@@ -61,7 +66,27 @@ public class Course {
 		return meals;
 	}
 	
-	public void addHost(House host) throws NoMoreMealsToHost {
+	public void addHost(House host) throws NoMoreMealsToHost, TooManyHosts {
+		if (mealSizes.size() == 0) {
+			throw new TooManyHosts();
+		}
+		
+		Boolean allocated = false;
+		for(Integer mealSize : new ReverseIterator<Integer>(new ArrayList<Integer>(mealSizes))) {
+			if(host.getMaxGuests() >= mealSize) {
+				Meal meal = new Meal(type, host, mealSize);
+				meals.add(meal);
+				mealSizes.remove(mealSize, 1);
+				allocated = true;
+				break;
+			}
+		}
+		if(!allocated) {
+			throw new NoMoreMealsToHost();
+		}
+	}
+
+	public void addHostOld(House host) throws NoMoreMealsToHost {
 		Boolean allMealsHosted = true;
 		for(Meal meal: meals) {
 			if (meal.getHost() == null) {
@@ -99,10 +124,7 @@ public class Course {
 	}
 	
 	public void addGuests(List<Person> guests) throws CantAllocatePersonToMeal {
-		//Randomise the list of people
-		long seed = System.nanoTime();
-		Collections.shuffle(guests, new Random(seed));
-		
+	
 		for(Person guest: guests) {
 			Boolean allocatedToMeal = false;
 			logger.debug("Trying " + guest + " " + guest.getHadCourseWith());
@@ -155,13 +177,25 @@ public class Course {
 		}
 		return sorted;
 	}
+	
+	public Integer getScore() {
+		Integer score = 0;
+		for(Meal meal: meals) {
+			score += meal.getScore();
+		}
+		return score;
+	}
 
 	@Override
 	public String toString() {
 		StringBuffer output = new StringBuffer();
+		output.append(type);
+		if(mealSizes.size() != 0) {
+			output.append(" - Meal Sizes ").append(mealSizes);
+		}
 		for(Meal meal: meals) {
 			output.append("\n  ");
-			output.append(meal);
+			output.append(" - ").append(meal);
 		}
 		
 		return output.toString();

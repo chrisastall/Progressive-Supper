@@ -3,11 +3,12 @@ package org.progressive.entities;
 import java.util.HashSet;
 import java.util.Set;
 
-public class House {
+public class House implements Comparable<House> {
 	private String name;
 	private Set<CourseType> courses;
 	private Set<Person> occupants;
 	private CourseType allocatedCourse;
+	private Integer maxGuests;
 	private Boolean preDinner;
 	private Boolean postDinner;
 	
@@ -92,6 +93,14 @@ public class House {
 		this.allocatedCourse = allocatedCourse;
 	}
 
+	public Integer getMaxGuests() {
+		return maxGuests;
+	}
+	
+	public void setMaxGuests(Integer maxGuests) {
+		this.maxGuests = maxGuests;
+	}
+
 	public void addCourse(CourseType course) {
 		this.courses.add(course);
 	}
@@ -121,10 +130,15 @@ public class House {
 	{
 	    return name.hashCode();
 	}
+
+	@Override
+	public int compareTo(House house) {
+		return this.name.compareTo(house.getName());
+	}
 	
 	@Override
 	public String toString() {
-		return name;
+		return name + " (" + maxGuests +")";
 	}
 	
 }

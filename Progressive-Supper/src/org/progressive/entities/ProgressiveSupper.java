@@ -3,11 +3,11 @@ package org.progressive.entities;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.progressive.exceptions.CantAllocatePersonToMeal;
 import org.progressive.exceptions.NoMoreMealsToHost;
 import org.progressive.exceptions.ReallyAllFourCourses;
+import org.progressive.exceptions.TooManyHosts;
 
 public class ProgressiveSupper {
 	private Map<CourseType, Course> courses;
@@ -43,16 +43,16 @@ public class ProgressiveSupper {
 		}
 	}
 	
-	public void allocateHosts(Set<House> hosts) {
+	public void allocateHosts(List<House> houses) throws NoMoreMealsToHost  {
 		for (int i = 1; i <= CourseType.values().length; i++) {
-			for (House host: hosts) {
+			for (House host: houses) {
 				if (host.getAllocatedCourse() == null) {
 					if (host.getCourses().size() == i) {
 						for(CourseType type: host.getCourses()) {
 							try {
 								courses.get(type).addHost(host);
 								break;
-							} catch (NoMoreMealsToHost e) {
+							} catch (TooManyHosts e) {
 								// Do Nothing
 							}
 						}
@@ -104,6 +104,9 @@ public class ProgressiveSupper {
 		Integer score = 0;
 		for(Person person: guests) {
 			score += person.getScore();
+		}
+		for(Course course: courses.values()) {
+			score += course.getScore();
 		}
 		return score;
 	}

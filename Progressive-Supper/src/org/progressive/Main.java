@@ -1,8 +1,10 @@
 package org.progressive;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 
 import org.apache.log4j.varia.NullAppender;
@@ -10,6 +12,7 @@ import org.progressive.entities.House;
 import org.progressive.entities.Person;
 import org.progressive.entities.ProgressiveSupper;
 import org.progressive.exceptions.CantAllocatePersonToMeal;
+import org.progressive.exceptions.NoMoreMealsToHost;
 import org.progressive.exceptions.ReallyAllFourCourses;
 
 public class Main {
@@ -18,7 +21,7 @@ public class Main {
 		org.apache.log4j.BasicConfigurator.configure(new NullAppender());
 		//org.apache.log4j.BasicConfigurator.configure();
 		
-		Set<House> houses = new DataSet2014().getHouses();
+		List<House> houses = new DataSet2014().getHouses();
 		
 		// Calculate the number of Houses
 		Integer numHouses = 0;
@@ -39,9 +42,24 @@ public class Main {
 		// Create a progressive supper
 		ProgressiveSupper ps = new ProgressiveSupper(numHouses, allPeople.size());
 
-		// Allocate Hosts to the meals
-		ps.allocateHosts(houses);
-			
+		Boolean hostsAllocated = false;
+		Integer triedHosts = 0;
+		while(!hostsAllocated) {
+			triedHosts++;
+			long seed = System.nanoTime();
+			Collections.shuffle(houses, new Random(seed));
+			// Allocate Hosts to the meals
+			try {
+				ps.allocateHosts(houses);
+				hostsAllocated = true;
+			} catch (NoMoreMealsToHost e1) {
+				// Do Nothing
+			}
+			if ((triedHosts % 1000000) == 0) {
+				System.out.println("Tried " + triedHosts / 1000000 + "m");
+			}
+		}
+		System.out.println("Host combinations tried " + triedHosts);
 		
 		Integer lowestScore = 99999999;
 		
@@ -54,6 +72,8 @@ public class Main {
 			while (complete == false) {
 				try {
 					tried++;
+					//Randomise the list of people
+					Collections.shuffle(people, new Random(System.nanoTime()));
 					ps.setGuests(people);
 					ps.clear();
 					ps.allocateGuests();

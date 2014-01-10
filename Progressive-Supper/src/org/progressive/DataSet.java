@@ -1,9 +1,9 @@
 package org.progressive;
 
-import java.util.Set;
+import java.util.List;
 
 import org.progressive.entities.House;
 
 public interface DataSet {
-	Set<House> getHouses();
+	List<House> getHouses();
 }

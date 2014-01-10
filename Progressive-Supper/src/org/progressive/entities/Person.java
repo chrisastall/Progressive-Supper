@@ -13,23 +13,26 @@ import org.progressive.exceptions.ReallyAllFourCourses;
 
 public class Person implements Comparable<Person> {
 	private String name;
+	private Gender gender;
 	private House house;
 	private String specialRequest;
 	private Person spouse;
 	private Bag<Person> hadCourseWith;
 
 	
-	public Person(String name) {
+	public Person(String name, Gender gender) {
 		super();
 		this.name = name;
+		this.gender = gender;
 		this.specialRequest = null;
 		this.hadCourseWith = new HashBag<Person>();
 		this.spouse = null;
 	}
 	
-	public Person(String name, String specialRequest) {
+	public Person(String name, Gender gender, String specialRequest) {
 		super();
 		this.name = name;
+		this.gender = gender;
 		this.specialRequest = specialRequest;
 		this.hadCourseWith = new HashBag<Person>();
 		this.spouse = null;
@@ -137,12 +140,28 @@ public class Person implements Comparable<Person> {
 		this.spouse = spouse;
 	}
 	
+	public Gender getGender() {
+		return gender;
+	}
+
+	public void setGender(Gender gender) {
+		this.gender = gender;
+	}
+	
+	public Boolean isMale() {
+		return gender == Gender.MALE;
+	}
+
+	public Boolean isFemale() {
+		return gender == Gender.FEMALE;
+	}
+
 	public void clear() {
 		this.hadCourseWith = new HashBag<Person>();
 	}
 	
 	@Override
 	public String toString() {
-		return name;
+		return name + "(" + gender + ")";
 	}
 }

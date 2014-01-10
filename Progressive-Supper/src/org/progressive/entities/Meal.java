@@ -22,6 +22,14 @@ public class Meal {
 		this.guests = new ArrayList<Person>();
 	}
 	
+	public Meal(CourseType type, House host, Integer maxGuests) {
+		super();
+		this.courseType = type;
+		this.maxGuests = maxGuests;
+		this.guests = new ArrayList<Person>();
+		this.setHost(host);
+	}
+	
 	public House getHost() {
 		return host;
 	}
@@ -80,8 +88,27 @@ public class Meal {
 		this.host.clear();
 	}
 	
+	public Integer getScore() {
+		Integer score = 0;
+		for(Person person: guests) {
+			if(person.isMale()) {
+				score ++;
+			} else {
+				score --;
+			}
+		}
+		
+		return Math.abs(score) * 1000;
+	}
+	
 	@Override
 	public String toString() {
-		return courseType + " meal hosted by " + host + " with guests " + guests;
+		Integer males = 0;
+		for(Person guest: guests) {
+			if (guest.isMale()) {
+				males ++;
+			}
+		}
+		return courseType + " meal hosted by " + host + " with " + guests.size() + " guests {M:" + males + ", F:" + (guests.size() - males) + "} " + guests;
 	}
 }
