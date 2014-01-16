@@ -1,8 +1,10 @@
 package org.progressive.entities;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.collections4.Bag;
@@ -12,13 +14,16 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.progressive.exceptions.ReallyAllFourCourses;
 
 public class Person implements Comparable<Person> {
+	private static final Integer SAME_PERSON_TWICE_SCORE = 1;
+	private static final Integer SAME_PERSON_THRICE_SCORE = 1;
+	
 	private String name;
 	private Gender gender;
 	private House house;
 	private String specialRequest;
 	private Person spouse;
 	private Bag<Person> hadCourseWith;
-
+	private Map<CourseType, House> whereEating;
 	
 	public Person(String name, Gender gender) {
 		super();
@@ -27,6 +32,7 @@ public class Person implements Comparable<Person> {
 		this.specialRequest = null;
 		this.hadCourseWith = new HashBag<Person>();
 		this.spouse = null;
+		this.whereEating = new HashMap<CourseType, House>();
 	}
 	
 	public Person(String name, Gender gender, String specialRequest) {
@@ -36,6 +42,7 @@ public class Person implements Comparable<Person> {
 		this.specialRequest = specialRequest;
 		this.hadCourseWith = new HashBag<Person>();
 		this.spouse = null;
+		this.whereEating = new HashMap<CourseType, House>();
 	}
 
 	public String getName() {
@@ -92,13 +99,17 @@ public class Person implements Comparable<Person> {
 		this.hadCourseWith.add(person);
 	}
 	
+	public void eatingAt(CourseType courseType, House house) {
+		this.whereEating.put(courseType, house);
+	}
+	
 	public Integer getScore() throws ReallyAllFourCourses {
 		Integer score = 0;
 		for(Person person: this.hadCourseWith.uniqueSet()) {
 			Integer i = this.hadCourseWith.getCount(person);
 			switch (i) {
-				case 2 : score += 1; break;
-				case 3 : score += 100; break;
+				case 2 : score += SAME_PERSON_TWICE_SCORE; break;
+				case 3 : score += SAME_PERSON_THRICE_SCORE; break;
 				case 4 : throw new ReallyAllFourCourses();
 			}
 		}
@@ -148,6 +159,10 @@ public class Person implements Comparable<Person> {
 		this.gender = gender;
 	}
 	
+	public Map<CourseType, House> getWhereEating() {
+		return whereEating;
+	}
+
 	public Boolean isMale() {
 		return gender == Gender.MALE;
 	}
@@ -158,6 +173,10 @@ public class Person implements Comparable<Person> {
 
 	public void clear() {
 		this.hadCourseWith = new HashBag<Person>();
+		this.whereEating = new HashMap<CourseType, House>();
+		if(!(house.isPreDinner() ||house.isPostDinner())) {
+			this.whereEating.put(house.getAllocatedCourse(), house);
+		}
 	}
 	
 	@Override

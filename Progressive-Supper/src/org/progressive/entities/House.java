@@ -111,7 +111,7 @@ public class House implements Comparable<House> {
 	}
 
 	public void clear() {
-		this.allocatedCourse = null;
+		//this.allocatedCourse = null;
 		for(Person occupant: occupants) {
 			occupant.clear();
 		}

@@ -85,20 +85,6 @@ public class Course {
 			throw new NoMoreMealsToHost();
 		}
 	}
-
-	public void addHostOld(House host) throws NoMoreMealsToHost {
-		Boolean allMealsHosted = true;
-		for(Meal meal: meals) {
-			if (meal.getHost() == null) {
-				meal.setHost(host);
-				allMealsHosted = false;
-				break;
-			}
-		}
-		if (allMealsHosted) {
-			throw new NoMoreMealsToHost();
-		}
-	}
 	
 	private Boolean alreadyHostingMeal(Person person) {
 		for(Meal meal: meals) {

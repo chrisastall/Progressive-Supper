@@ -9,6 +9,8 @@ import org.progressive.exceptions.CantEatWithSpouse;
 import org.progressive.exceptions.TooManyGuestsException;
 
 public class Meal {
+	private final static Integer GENDER_MIX_SCORE = 1000;
+	
 	private CourseType courseType;
 	private House host;
 	private List<Person> guests;
@@ -38,8 +40,13 @@ public class Meal {
 		this.host = host;
 		host.setAllocatedCourse(courseType);
 		for (Person person: host.getOccupants()) {
-			this.guests.add(person);
+			addPerson(person);
 		}
+	}
+	
+	private void addPerson(Person person) {
+		this.guests.add(person);
+		person.eatingAt(this.courseType, this.host);
 	}
 	
 	public void calculateAttendingMealWith() {
@@ -75,7 +82,7 @@ public class Meal {
 		if(this.maxGuests.equals(this.guests.size())) {
 			throw new TooManyGuestsException();
 		}	
-		this.guests.add(person);
+		addPerson(person);
 	}
 	
 	public void clear() {
@@ -98,7 +105,12 @@ public class Meal {
 			}
 		}
 		
-		return Math.abs(score) * 1000;
+		score = Math.abs(score);
+		if(score > 0) {
+			score --;
+		}
+
+		return score * GENDER_MIX_SCORE;
 	}
 	
 	@Override

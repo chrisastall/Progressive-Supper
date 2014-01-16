@@ -46,8 +46,7 @@ public class Main {
 		Integer triedHosts = 0;
 		while(!hostsAllocated) {
 			triedHosts++;
-			long seed = System.nanoTime();
-			Collections.shuffle(houses, new Random(seed));
+			Collections.shuffle(houses, new Random(System.nanoTime()));
 			// Allocate Hosts to the meals
 			try {
 				ps.allocateHosts(houses);
@@ -56,7 +55,7 @@ public class Main {
 				// Do Nothing
 			}
 			if ((triedHosts % 1000000) == 0) {
-				System.out.println("Tried " + triedHosts / 1000000 + "m");
+				System.out.println("Host combinations tried " + triedHosts / 1000000 + "m");
 			}
 		}
 		System.out.println("Host combinations tried " + triedHosts);
@@ -65,37 +64,46 @@ public class Main {
 		
 		// If we are fully hosted then allocate guests
 		if (ps.allCoursesFullyHosted()) {
-			Integer tried = 0;
-			List<Person> people = new ArrayList<Person>();
-			people.addAll(allPeople);
+			List<Person> people = new ArrayList<Person>(allPeople);
 			Boolean complete = false;
+			//Set<Integer> triedCombinations = new HashSet<Integer>();
+			Integer tried = 0;
 			while (complete == false) {
-				try {
-					tried++;
-					//Randomise the list of people
-					Collections.shuffle(people, new Random(System.nanoTime()));
-					ps.setGuests(people);
-					ps.clear();
-					ps.allocateGuests();
-					if (ps.getScore().compareTo(lowestScore) < 0) {
-						System.out.println("Score = " + ps.getScore());
-						
-						lowestScore = ps.getScore();
-						System.out.println(ps);
-						System.out.println();
-						for(Person p: people) {
-							System.out.println(p.getName() + " is having dinner with " + p.getHadCourseWithOrdered());
+				//Randomise the list of people
+				Collections.shuffle(people);
+				//Integer peopleHash = people.hashCode();
+				//if(!triedCombinations.contains(peopleHash)) {
+					try {
+						//triedCombinations.add(peopleHash);
+						tried++;
+						ps.setGuests(people);
+						ps.clear();
+						ps.allocateGuests();
+						if (ps.getScore().compareTo(lowestScore) < 0) {
+							System.out.println("Score = " + ps.getScore());
+							
+							lowestScore = ps.getScore();
+							System.out.println(ps);
+							System.out.println("Who's Eating with Who");
+							for(Person p: people) {
+								//System.out.println("   - " + p.getName() + " is having dinner with " + p.getHadCourseWithOrdered());
+								System.out.println("   - " + p.getName() + " is eating at " + p.getWhereEating() + (p.getSpecialRequest() == null ?"":", Special Request {" + p.getSpecialRequest() + "}"));
+								//System.out.println();
+							}
+							
 						}
+						
+						if(lowestScore == 0) {
+							complete = true;
+						}
+					} catch (CantAllocatePersonToMeal e) {
+	
+					} catch (ReallyAllFourCourses e) {
+	
 					}
-					
-					if(lowestScore == 0) {
-						complete = true;
-					}
-				} catch (CantAllocatePersonToMeal e) {
-
-				} catch (ReallyAllFourCourses e) {
-
-				}
+				//} else {
+					//System.out.println("Already Tried (" + triedCombinations.size() + ") - {" + peopleHash + "} " + people);
+				//}
 				if ((tried % 1000000) == 0) {
 					System.out.println("Tried " + tried / 1000000 + "m");
 				}
